@@ -52,10 +52,13 @@ sql	pd.read_sql()	df.to_sql()
 
 #gets a statistical summary NaN= not a number
 #df.describe()
+
 #includes objects/strings
 #df.describe(include='all')
+
 #by column
 #dataframe[[' column 1 ',column 2', 'column 3'] ].describe()
 #df[['length', 'compression-ratio']].describe()
+
 #concise summary of dataframe
 #df.info
