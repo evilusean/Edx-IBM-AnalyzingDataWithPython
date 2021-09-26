@@ -1,0 +1,301 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Sep 26 12:49:17 2021
+
+@author: Shawn Temes
+"""
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# path of data 
+path = 'https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBMDeveloperSkillsNetwork-DA0101EN-SkillsNetwork/labs/Data%20files/automobileEDA.csv'
+df = pd.read_csv(path)
+df.head()
+"""
+Linear Regression
+One example of a Data Model that we will be using is:
+
+Simple Linear Regression
+Simple Linear Regression is a method to help us understand the relationship 
+between two variables:
+
+The predictor/independent variable (X)
+The response/dependent variable (that we want to predict)(Y)
+𝑌ℎ𝑎𝑡=𝑎+𝑏𝑋
+"""
+from sklearn.linear_model import LinearRegression
+#create linear regresssion model
+lm = LinearRegression()
+#set parameters
+X = df[['highway-mpg']]
+Y = df['price']
+#fit model using MPG
+lm.fit(X,Y)
+#output a prediction
+Yhat=lm.predict(X)
+Yhat[0:5]   
+#what is the value of the intercept
+lm.intercept_
+#what is the value of the slope
+lm.coef_
+#Price = 38423.31 - 821.73 x highway-mpg
+
+#new model
+lm1 = LinearRegression()
+#alternative way to fit model
+lm1.fit(df[['engine-size']], df[['price']])
+#output a prediction
+Yhat=lm1.predict(X)
+Yhat[0:5]   
+#what is the value of the intercept
+lm1.intercept_
+#what is the value of the slope
+lm1.coef_
+#Price = 38423.31 - 821.73 x highway-mpg
+#Yhat=-7963.34 + 166.86*X
+#Price=-7963.34 + 166.86*engine-size
+
+""" Multiple Linear Progression
+If we want to use more variables in our model to predict car price,
+ we can use Multiple Linear Regression. Multiple Linear Regression is very similar 
+ to Simple Linear Regression, but this method is used to explain the relationship 
+ between one continuous response (dependent) variable and two or more predictor 
+ (independent) variables. Most of the real-world regression models involve multiple
+ predictors.
+ Yhat = a + b\_1 X\_1 + b\_2 X\_2 + b\_3 X\_3 + b\_4 X\_4
+"""
+#acquire multiple variables
+Z = df[['horsepower', 'curb-weight', 'engine-size', 'highway-mpg']]
+#fit to price
+lm.fit(Z, df['price'])
+#acquire intercept -15806
+lm.intercept_
+#acquire slope
+lm.coef_
+#Price = -15678.742628061467 + 52.65851272 x horsepower + 4.69878948 x curb-weight + 81.95906216 x engine-size + 33.58258185 x highway-mpg
+
+#new fit
+lm2 = LinearRegression()
+lm2.fit(df[['normalized-losses' , 'highway-mpg']],df['price'])
+#acquire intercept
+lm2.coef_
+
+#Model with visualization
+import seaborn as sns
+%matplotlib inline 
+#negative correlation MPG - price
+width = 12
+height = 10
+plt.figure(figsize=(width, height))
+sns.regplot(x="highway-mpg", y="price", data=df)
+plt.ylim(0,)
+ 
+#new plot RPM weak correlation
+plt.figure(figsize=(width, height))
+sns.regplot(x="peak-rpm", y="price", data=df)
+plt.ylim(0,)
+#gets correlation comparison of 3 variables
+df[["peak-rpm","highway-mpg","price"]].corr()
+
+
+"""
+Reesidual plot
+The difference between the observed value (y) and the predicted value (Yhat)
+ is called the residual (e). When we look at a regression plot, the residual is
+ the distance from the data point to the fitted regression line.
+ 
+ A residual plot is a graph that shows the residuals on the vertical y-axis 
+ and the independent variable on the horizontal x-axis.
+"""
+#no line residual plot
+width = 12
+height = 10
+plt.figure(figsize=(width, height))
+sns.residplot(df['highway-mpg'], df['price'])
+plt.show()
+
+
+"""
+Multiple Linear Regreession
+"""
+#model comparison multiple linear regression plot 
+Y_hat = lm.predict(Z)
+plt.figure(figsize=(width, height))
+
+#first is actual, second is prediction
+ax1 = sns.distplot(df['price'], hist=False, color="r", label="Actual Value")
+sns.distplot(Y_hat, hist=False, color="b", label="Fitted Values" , ax=ax1)
+
+
+plt.title('Actual vs Fitted Values for Price')
+plt.xlabel('Price (in dollars)')
+plt.ylabel('Proportion of Cars')
+
+plt.show()
+plt.close()
+
+"""
+polynomial regression and pipelines
+Quadratic - 2nd Order
+𝑌ℎ𝑎𝑡=𝑎+𝑏1𝑋+𝑏2𝑋2
+ 
+Cubic - 3rd Order
+𝑌ℎ𝑎𝑡=𝑎+𝑏1𝑋+𝑏2𝑋2+𝑏3𝑋3
+Higher-Order:
+𝑌=𝑎+𝑏1𝑋+𝑏2𝑋2+𝑏3𝑋3
+"""
+#function to plot with matplotlib
+def PlotPolly(model, independent_variable, dependent_variabble, Name):
+    x_new = np.linspace(15, 55, 100)
+    y_new = model(x_new)
+
+    plt.plot(independent_variable, dependent_variabble, '.', x_new, y_new, '-')
+    plt.title('Polynomial Fit with Matplotlib for Price ~ Length')
+    ax = plt.gca()
+    ax.set_facecolor((0.898, 0.898, 0.898))
+    fig = plt.gcf()
+    plt.xlabel(Name)
+    plt.ylabel('Price of Cars')
+
+    plt.show()
+    plt.close()
+#new variables
+x = df['highway-mpg']
+y = df['price']
+# Here we use a polynomial of the 3rd order (cubic) 
+f = np.polyfit(x, y, 3)
+p = np.poly1d(f)
+print(p)
+#plot function
+PlotPolly(p, x, y, 'highway-mpg')
+np.polyfit(x, y, 3)
+
+# Here we use a polynomial of the 11rd order (cubic) 
+f1 = np.polyfit(x, y, 11)
+p1 = np.poly1d(f1)
+print(p1)
+PlotPolly(p1,x,y, 'Highway MPG')
+
+
+from sklearn.preprocessing import PolynomialFeatures
+#create a PolynomialFeatures object of degree 2:
+pr=PolynomialFeatures(degree=2)
+Z_pr=pr.fit_transform(Z)
+#in the original data there are 201 samples, and 4 features(201,4)
+Z.shape
+# After the transformation, there are 201 samples and 15 features.(201, 15)
+Z_pr.shape
+"""
+pipeline=Data Pipelines simplify the steps of processing the data. We use the
+ module Pipeline to create a pipeline. We also use StandardScaler as a step 
+ in our pipeline.
+ """
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+#create the pipeline by creating a list of tuples including the name of the model 
+#or estimator and its corresponding constructor
+Input=[('scale',StandardScaler()), ('polynomial', PolynomialFeatures(include_bias=False)), ('model',LinearRegression())]
+#input the list as an argument to the pipeline constructor
+pipe=Pipeline(Input)
+pipe
+#first convert the data type Z to type float to avoid conversion warnings that 
+#may appear as a result of StandardScaler taking float inputs.
+#then normalize the data, perform a transform and fit the model simultaneously
+Z = Z.astype(float)
+pipe.fit(Z,y)
+#normalize the data, perform a transform and produce a prediction simultaneously
+ypipe=pipe.predict(Z)
+ypipe[0:4]
+
+#Create a pipeline that standardizes the data, then produce a prediction using a
+# linear regression model using the features Z and target y.
+Input=[('scale',StandardScaler()),('model',LinearRegression())]
+
+pipe=Pipeline(Input)
+
+pipe.fit(Z,y)
+
+ypipe=pipe.predict(Z)
+ypipe[0:10]
+"""
+R-squared
+R squared, also known as the coefficient of determination, is a measure to 
+indicate how close the data is to the fitted regression line.
+
+The value of the R-squared is the percentage of variation of the response 
+variable (y) that is explained by a linear model.
+
+What is a good R-squared value?
+When comparing models, the model with the higher R-squared value is a better fit 
+for the data.
+
+Mean Squared Error (MSE)
+
+The Mean Squared Error measures the average of the squares of errors. That is,
+ the difference between actual value (y) and the estimated value (ŷ).
+ What is a good MSE?
+When comparing models, the model with the smallest MSE value is a better fit 
+for the data.
+ """
+ #highway_mpg_fit
+lm.fit(X, Y)
+# Find the R^2
+print('The R-square is: ', lm.score(X, Y))
+#0.496591 We can say that ~49.659% of the variation of the price is explained by 
+#this simple linear model "horsepower_fit".
+
+#calculate MSE
+#can predict the output i.e., "yhat" using the predict method, where X is the input variable
+Yhat=lm.predict(X)
+print('The output of the first four predicted value is: ', Yhat[0:4])
+
+#import
+from sklearn.metrics import mean_squared_error
+#compare the predicted results with the actual results
+mse = mean_squared_error(df['price'], Yhat)
+print('The mean square error of price and predicted value is: ', mse)
+
+#calculateR^2
+# fit the model 
+lm.fit(Z, df['price'])
+# Find the R^2
+print('The R-square is: ', lm.score(Z, df['price']))
+#0.80935 can say that ~80.896 % of the variation of price is explained
+
+#produce a prediction
+Y_predict_multifit = lm.predict(Z)
+#print results
+print('The mean square error of price and predicted value using multifit is: ', \
+      mean_squared_error(df['price'], Y_predict_multifit))
+
+#import R^2
+from sklearn.metrics import r2_score
+#apply the function to get the value of R^2
+r_squared = r2_score(y, p(x))
+print('The R-square value is: ', r_squared)
+#0.67419 We can say that ~67.419 % of the variation of price is explained 
+#by this polynomial fit.
+
+#calculate MSE
+mean_squared_error(df['price'], p(x))
+
+#import
+import matplotlib.pyplot as plt
+import numpy as np
+%matplotlib inline 
+#create new input
+new_input=np.arange(1, 100, 1).reshape(-1, 1)
+#fit the model
+lm.fit(X, Y)
+lm
+#create a prediction
+yhat=lm.predict(new_input)
+yhat[0:5]
+#plot the data with prediction
+plt.plot(new_input, yhat)
+plt.show()
+
+#Comparing these three models, we conclude that the MLR model is the 
+#best model to be able to predict price from our dataset.
