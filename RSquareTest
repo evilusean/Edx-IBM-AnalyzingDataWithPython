@@ -1,0 +1,16 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Sep 27 08:23:04 2021
+
+@author: Shawn Temes
+"""
+
+#R^2 square test for finding most accurate polynomail
+RSqu_test= []
+order=[1,2,3,4]
+for n in order:
+    pr=PolynomialFeatures(degree=n)
+    x_train_pr.fit_transform(x_train[['horsepower']])
+    x_test_train_pr=pr.fit_transform(x_test[["horsepower"]])
+    lr.fit(x_train_pr, y_train)
+    RSqu_test.append(lr.score(x_test_pr, y_test))
