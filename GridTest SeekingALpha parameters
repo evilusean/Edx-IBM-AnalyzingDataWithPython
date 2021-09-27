@@ -1,0 +1,20 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Sep 27 08:50:11 2021
+
+@author: Shawn Temes
+"""
+#ScikitLearn Grid search seeking alpha
+from sklearn.linear_model import Ridge
+from sklearn.model_selection import GridSearchCV
+#parameters for alpha
+parameters1 = [{'alpha':[0.001,0.1,1,10,100,1000,10000,100000,1000000]}]
+#parameters2 ={{'alpha':[0.001,0.1,1,10,100], 'normalize':[True, False]}
+#create model
+RR=Ridge()
+#R2, parameters, 4 folds
+Grid1 = GridSearchCV(RR, parameters1, cv=4)
+Grid1.fit(X_data[['horsepower','curb-weight', "engine-size", 'highway-mpg']],Y-data)
+Grid1.best_estimator_
+scores=Grid1.cv_results_
+scores['mean_test_score']
