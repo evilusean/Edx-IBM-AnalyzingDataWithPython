@@ -1,0 +1,109 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Sep 28 14:01:47 2021
+IBM AI/Machine Learning/Watson Studios Jupyter notebook
+https://dataplatform.cloud.ibm.com/analytics/notebooks/v2/5cea6ec0-fdb9-49b4-9987-9b4b76807b53/view?access_token=01306c7a263fef50a29ffa9f077869f1906ba5c969485dac31abaab528a18785
+@author: Shawn Temes
+"""
+
+#FinalProject
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler,PolynomialFeatures
+from sklearn.linear_model import LinearRegression
+%matplotlib inline
+#get File for kings county housing realestate
+file_name='https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBMDeveloperSkillsNetwork-DA0101EN-SkillsNetwork/labs/FinalModule_Coursera/data/kc_house_data_NaN.csv'
+df=pd.read_csv(file_name)
+#display first 5 columns
+df.head()
+#get column names and types
+df.dtypes
+#get statistical analysis of the frame
+df.describe()
+#drop data from 2 rows
+df.drop(['id', 'Unnamed: 0'], axis=1, inplace=True)
+#check for missing values in bedroom column
+print("number of NaN values for the column bedrooms :", df['bedrooms'].isnull().sum())
+print("number of NaN values for the column bathrooms :", df['bathrooms'].isnull().sum())
+#replace missing bedrooms with the mean
+mean=df['bedrooms'].mean()
+df['bedrooms'].replace(np.nan,mean, inplace=True)
+#replace missing bathrooms with mean
+mean=df['bathrooms'].mean()
+df['bathrooms'].replace(np.nan,mean, inplace=True)
+#count number of floors with unique floor values
+floor_count = df['floors'].value_counts().to_frame()
+floor_count
+#Use the function boxplot in the seaborn library to determine whether
+# houses with a waterfront view or without a waterfront view have more price outliers.
+sns.boxplot(x='waterfront', y='price', data=df)
+#Use the function regplot in the seaborn library to determine if the feature 
+#sqft_above is negatively or positively correlated with price.
+sns.regplot(x='sqft_above', y='price', data=df)
+#We can use the Pandas method corr() to find the feature other than price 
+#that is most correlated with price.
+df.corr()['price'].sort_values()
+# Fit a linear regression model using the longitude feature 'long' and caculate the R^2.
+X = df[['long']]
+Y = df['price']
+lm = LinearRegression()
+lm.fit(X,Y)
+lm.score(X, Y)
+#linear regression model for sqft_living
+X1 = df[['sqft_living']]
+Y1 = df[['price']]
+lm1 = LinearRegression().fit(X1, Y1)
+lm1.score(X1, Y1)
+#Fit a linear regression model to predict the 'price' using the list of features:
+features =["floors", "waterfront","lat" ,"bedrooms" ,"sqft_basement" ,"view" ,"bathrooms","sqft_living15","sqft_above","grade","sqft_living"]     
+#calculate R^2 
+X1 = df[['sqft_living']]
+Y1 = df[['price']]
+lm1 = LinearRegression().fit(X1, Y1)
+lm1.score(X1, Y1)
+"""
+Create a list of tuples, the first element in the tuple contains the name of the estimator:
+'scale'
+'polynomial'
+'model'
+The second element in the tuple contains the model constructor
+StandardScaler()
+PolynomialFeatures(include_bias=False)
+LinearRegression()
+"""
+Input=[('scale',StandardScaler()),('polynomial', PolynomialFeatures(include_bias=False)),('model',LinearRegression())]
+#Use the list to create a pipeline object to predict the 'price', fit the object using the features in the list features, and calculate the R^2.
+pipe = Pipeline(Input)
+pipe.fit(df[features], df[['price']])
+pipe.score(df[features], df[['price']])
+#import
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import train_test_split
+print("done")
+#split the data into training and testing sets:
+features =["floors", "waterfront","lat" ,"bedrooms" ,"sqft_basement" ,"view" ,"bathrooms","sqft_living15","sqft_above","grade","sqft_living"]    
+X = df[features]
+Y = df['price']
+
+x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.15, random_state=1)
+
+
+print("number of test samples:", x_test.shape[0])
+print("number of training samples:",x_train.shape[0])
+
+#Create and fit a Ridge regression object using the training data, set the regularization parameter to 0.1, and calculate the R^2 using the test data.
+from sklearn.linear_model import Ridge
+#Ridge object
+RR = Ridge(alpha=0.1).fit(x_train, y_train)
+RR.score(x_test, y_test)
+#Perform a second order polynomial transform on both the training data and testing data. Create and fit a Ridge regression object using the training data, set the regularisation parameter to 0.1, and calculate the R^2 utilising the test data provided. Take a screenshot of your code and the R^2.
+from sklearn.preprocessing import PolynomialFeatures
+poly = PolynomialFeatures(degree=2)
+x_train_poly = poly.fit_transform(x_train)
+x_test_poly = poly.transform(x_test)
+RR1 = Ridge(alpha=0.1).fit(x_train_poly, y_train)
+RR1.score(x_test_poly, y_test)
